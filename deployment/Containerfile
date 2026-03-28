@@ -1,0 +1,138 @@
+# Multi-stage build for Trading System
+# Optimized for Podman
+
+# ============================================================================
+# Stage 1: Builder
+# ============================================================================
+FROM python:3.11-slim as builder
+
+# Set working directory
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    make \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install TA-Lib (required for technical indicators)
+RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
+    tar -xzf ta-lib-0.4.0-src.tar.gz && \
+    cd ta-lib/ && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
+
+# Copy requirements
+COPY requirements.txt .
+
+# Create virtual environment and install dependencies
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
+
+# ============================================================================
+# Stage 2: Runtime
+# ============================================================================
+FROM python:3.11-slim
+
+# Set labels
+LABEL maintainer="trading-team@example.com"
+LABEL description="Algorithmic Trading System"
+LABEL version="0.1.0"
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    TRADING_HOME=/app
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy TA-Lib from builder
+COPY --from=builder /usr/lib/libta_lib.* /usr/lib/
+COPY --from=builder /usr/include/ta-lib/ /usr/include/ta-lib/
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Create non-root user
+RUN groupadd -r trading && \
+    useradd -r -g trading -d /app -s /sbin/nologin trading
+
+# Set working directory
+WORKDIR /app
+
+# Create necessary directories
+RUN mkdir -p \
+    /app/logs \
+    /app/data \
+    /app/.cache \
+    /app/config \
+    && chown -R trading:trading /app
+
+# Copy application code
+COPY --chown=trading:trading src/ /app/src/
+COPY --chown=trading:trading pyproject.toml /app/
+COPY --chown=trading:trading README.md /app/
+
+# Install the package
+RUN pip install --no-cache-dir -e .
+
+# Switch to non-root user
+USER trading
+
+# Expose ports
+EXPOSE 8000 9090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import sys; sys.exit(0)"
+
+# Default command
+CMD ["python", "-m", "trading_system"]
+
+# ============================================================================
+# Build Instructions:
+# ============================================================================
+# Build image:
+#   podman build -t trading-system:latest -f deployment/Containerfile .
+#
+# Run container:
+#   podman run -d \
+#     --name trading-system \
+#     -e ALPACA_API_KEY=$ALPACA_API_KEY \
+#     -e ALPACA_SECRET_KEY=$ALPACA_SECRET_KEY \
+#     -v $(pwd)/data:/app/data:Z \
+#     -v $(pwd)/logs:/app/logs:Z \
+#     -v $(pwd)/.cache:/app/.cache:Z \
+#     -p 8000:8000 \
+#     -p 9090:9090 \
+#     trading-system:latest
+#
+# Run with environment file:
+#   podman run -d \
+#     --name trading-system \
+#     --env-file .env \
+#     -v $(pwd)/data:/app/data:Z \
+#     -v $(pwd)/logs:/app/logs:Z \
+#     trading-system:latest
+#
+# Development mode (with hot reload):
+#   podman run -it --rm \
+#     --name trading-system-dev \
+#     --env-file .env \
+#     -v $(pwd)/src:/app/src:Z \
+#     -v $(pwd)/data:/app/data:Z \
+#     -v $(pwd)/logs:/app/logs:Z \
+#     trading-system:latest \
+#     python -m trading_system --dev
+# ============================================================================
