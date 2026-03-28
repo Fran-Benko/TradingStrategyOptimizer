@@ -1,3 +1,9 @@
+---
+name: CIConfigurer
+description: "Especialista en configuración de pipelines de CI/CD"
+guardrails_config: ".opencode/config/security-guardrails.yaml"
+---
+
 # CIConfigurer Agent
 
 ## Rol

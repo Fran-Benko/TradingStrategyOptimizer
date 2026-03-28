@@ -1,3 +1,9 @@
+---
+name: DeploymentEngineer
+description: "Especialista en deployment y operaciones"
+guardrails_config: ".opencode/config/security-guardrails.yaml"
+---
+
 # DeploymentEngineer Agent
 
 ## Rol

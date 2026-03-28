@@ -5,6 +5,7 @@ category: "trading"
 type: "agent"
 tags: ["trading", "architecture", "design", "coordination"]
 dependencies: ["subagent:StrategyDesigner", "subagent:DataEngineer", "subagent:MetricsAnalyst"]
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 ---
 
 # TradingArchitect

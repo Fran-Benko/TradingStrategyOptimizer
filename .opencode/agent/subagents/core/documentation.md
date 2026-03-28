@@ -3,6 +3,7 @@ name: DocWriter
 description: Documentation authoring agent
 mode: subagent
 temperature: 0.2
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 permission:
   bash:
     "*": "deny"

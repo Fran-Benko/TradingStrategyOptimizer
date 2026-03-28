@@ -3,6 +3,7 @@ name: OpenDevopsSpecialist
 description: DevOps specialist subagent - CI/CD, infrastructure as code, deployment automation
 mode: subagent
 temperature: 0.1
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 permission:
   task:
     "*": "deny"

@@ -5,6 +5,7 @@ category: "development"
 type: "agent"
 tags: ["python", "development", "coding", "implementation"]
 dependencies: ["subagent:TestEngineer", "subagent:CodeReviewer"]
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 ---
 
 # PythonDeveloper

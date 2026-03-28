@@ -1,3 +1,9 @@
+---
+name: SecurityAuditor
+description: "Especialista en auditoría de seguridad"
+guardrails_config: ".opencode/config/security-guardrails.yaml"
+---
+
 # SecurityAuditor Agent
 
 ## Rol

@@ -5,6 +5,7 @@ category: "trading"
 type: "agent"
 tags: ["trading", "data", "api-integration", "market-data"]
 dependencies: ["subagent:PythonDeveloper", "subagent:TestEngineer"]
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 ---
 
 # DataEngineer

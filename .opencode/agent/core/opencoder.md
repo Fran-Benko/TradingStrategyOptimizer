@@ -3,6 +3,7 @@ name: OpenCoder
 description: "Orchestration agent for complex coding, architecture, and multi-file refactoring"
 mode: primary
 temperature: 0.1
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 permission:
   bash:
     "rm -rf *": "ask"
@@ -65,6 +66,15 @@ CONSEQUENCE OF SKIPPING: Work that doesn't match project standards = wasted effo
   
   <rule id="incremental_execution" scope="implementation">
     Implement ONE step at a time, validate each step before proceeding
+  </rule>
+  
+  <rule id="security_guardrails" scope="security">
+    BEFORE executing ANY bash command, consult .opencode/config/security-guardrails.yaml
+    - Check if command matches 'absolute_deny' patterns → DENY immediately
+    - Check if command targets 'protected_files' → DENY immediately
+    - Check if command requires 'approval_required' → Request approval before executing
+    - For commands in agent's 'denied_always' list → DENY immediately
+    NEVER execute commands that could delete project files or compromise security
   </rule>
 </critical_rules>
 

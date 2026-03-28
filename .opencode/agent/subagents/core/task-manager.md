@@ -3,6 +3,7 @@ name: TaskManager
 description: JSON-driven task breakdown specialist transforming complex features into atomic, verifiable subtasks with dependency tracking and CLI integration
 mode: subagent
 temperature: 0.1
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 permission:
   bash:
     "*": "deny"

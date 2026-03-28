@@ -3,6 +3,7 @@ name: OpenAgent
 description: "Universal agent for answering queries, executing tasks, and coordinating workflows across any domain"
 mode: primary
 temperature: 0.2
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 permission:
   bash:
     "*": "ask"

@@ -3,6 +3,7 @@ name: OpenFrontendSpecialist
 description: Frontend UI design specialist - subagent for design systems, themes, animations
 mode: subagent
 temperature: 0.2
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 permission:
   task:
     "*": "deny"

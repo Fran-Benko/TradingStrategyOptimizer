@@ -1,3 +1,9 @@
+---
+name: BacktestValidator
+description: "Especialista en validación de resultados de backtesting"
+guardrails_config: ".opencode/config/security-guardrails.yaml"
+---
+
 # BacktestValidator Agent
 
 ## Rol

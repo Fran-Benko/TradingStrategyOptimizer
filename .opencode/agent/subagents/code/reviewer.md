@@ -3,6 +3,7 @@ name: CodeReviewer
 description: Code review, security, and quality assurance agent
 mode: subagent
 temperature: 0.1
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 permission:
   bash:
     "*": "deny"

@@ -1,0 +1,617 @@
+# ═════════════════════════════════════════════════════════════
+# SECURITY GUARDRAILS - Configuración Centralizada
+# ═════════════════════════════════════════════════════════════
+# Este archivo define los permisos y restricciones de seguridad
+# para todos los agentes del sistema.
+#
+# Niveles de acción:
+#   deny:   Bloquea automáticamente (nunca ejecuta)
+#   ask:    Requiere aprobación del usuario
+#   allow:  Ejecuta sin restricciones
+# ═════════════════════════════════════════════════════════════
+
+version: "1.0"
+last_updated: "2026-03-28"
+
+# ═════════════════════════════════════════════════════════════
+# BLOQUEOS ABSOLUTOS (deny - nunca ejecutar)
+# ═════════════════════════════════════════════════════════════
+absolute_deny:
+  description: "Comandos que nunca se deben ejecutar bajo ninguna circunstancia"
+
+  filesystem:
+    - "rm -rf /"
+    - "rm -rf ."
+    - "rm -rf /*"
+    - "rm -rf *"
+    - "mkfs"
+    - "mkfs.*"
+    - "dd if=.*of=/dev/"
+    - "dd if=/dev/zero of=.*"
+    - "shred -"
+    - "> /dev/sd*"
+    - "parted"
+
+  system:
+    - "reboot"
+    - "shutdown"
+    - "init 0"
+    - "init 6"
+    - "halt"
+    - "poweroff"
+
+  containers_destructive:
+    - "docker system prune"
+    - "docker system prune -a"
+    - "podman system prune"
+    - "podman system prune -a"
+    - "docker system df"
+    - "podman system df"
+
+# ═════════════════════════════════════════════════════════════
+# PROTECCIÓN DE ARCHIVOS (deny - nunca modificar)
+# ═════════════════════════════════════════════════════════════
+protected_files:
+  description: "Archivos que nunca deben ser modificados"
+
+  credentials:
+    - "**/*.pem"
+    - "**/*.crt"
+    - "**/*.key"
+    - "**/id_rsa*"
+    - "**/id_ed25519*"
+    - "**/credentials.json"
+    - "**/service-account.json"
+    - "**/.aws/**"
+    - "**/.kube/**"
+    - "**/.ssh/**"
+    - "**/.env"
+    - "**/.env.local"
+    - "**/.env.production"
+
+  system:
+    - "**/__pycache__/**"
+    - "**/*.pyc"
+    - "**/*.pyo"
+    - "**/.git/**"
+    - "**/node_modules/**"
+    - "**/.venv/**"
+    - "**/venv/**"
+
+# ═════════════════════════════════════════════════════════════
+# PERMISOS POR AGENTE
+# ═════════════════════════════════════════════════════════════
+agent_permissions:
+  description: "Configuración granular de permisos por agente"
+
+  # ─────────────────────────────────────────────────────────────
+  # AGENTE PRINCIPAL
+  # ─────────────────────────────────────────────────────────────
+  OpenCoder:
+    description: "Agente principal de desarrollo"
+    default_action: "ask"
+
+    allowed:
+      - "git add *"
+      - "git commit *"
+      - "git push"
+      - "git pull"
+      - "git status"
+      - "git diff"
+      - "git log *"
+      - "python *"
+      - "pytest *"
+      - "pip install"
+      - "pip uninstall"
+      - "npm install"
+      - "npm run *"
+      - "mkdir"
+      - "touch"
+      - "echo"
+      - "cat"
+      - "ls"
+      - "pwd"
+      - "cd"
+      - "cp"
+      - "mv"
+      - "grep"
+      - "find"
+      - "head"
+      - "tail"
+      - "wc"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+      - "chmod -R 777"
+
+    approval_required:
+      - "git push --force"
+      - "git push --force-with-lease"
+      - "git reset --hard"
+      - "git clean -fdx"
+      - "pip install --force-reinstall"
+      - "pip install --force"
+      - "curl.*\\| sh"
+      - "wget.*\\| sh"
+
+  OpenAgent:
+    description: "Agente general de tareas"
+    default_action: "ask"
+
+    allowed:
+      - "git add *"
+      - "git commit *"
+      - "git push"
+      - "git pull"
+      - "git status"
+      - "git diff"
+      - "python *"
+      - "pytest *"
+      - "pip install"
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+      - "git push --force"
+
+  # ─────────────────────────────────────────────────────────────
+  # AGENTES DE TRADING
+  # ─────────────────────────────────────────────────────────────
+  TradingArchitect:
+    description: "Arquitecto principal del sistema de trading"
+    default_action: "allow"
+
+    allowed:
+      - "python *"
+      - "pip install"
+      - "pytest *"
+      - "mkdir"
+      - "touch"
+      - "ls"
+      - "cat"
+      - "git add *"
+      - "git commit *"
+      - "git push"
+      - "git pull"
+      - "git status"
+      - "git diff"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+      - "git push --force"
+
+    approval_required:
+      - "docker *"
+      - "podman *"
+
+  StrategyDesigner:
+    description: "Diseñador de estrategias de trading"
+    default_action: "allow"
+
+    allowed:
+      - "python *"
+      - "pip install"
+      - "pytest *"
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+      - "grep"
+      - "find"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+      - "docker *"
+      - "podman *"
+
+  DataEngineer:
+    description: "Ingeniero de datos especializado en integración de fuentes de mercado"
+    default_action: "allow"
+
+    allowed:
+      - "python *"
+      - "pip install"
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+      - "curl"
+      - "wget"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+      - "docker *"
+      - "podman *"
+
+  MetricsAnalyst:
+    description: "Analista de métricas de trading"
+    default_action: "allow"
+
+    allowed:
+      - "python *"
+      - "pip install"
+      - "pytest *"
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+  # ─────────────────────────────────────────────────────────────
+  # AGENTES DE DESARROLLO
+  # ─────────────────────────────────────────────────────────────
+  PythonDeveloper:
+    description: "Desarrollador Python especializado"
+    default_action: "allow"
+
+    allowed:
+      - "python *"
+      - "pip install"
+      - "pip uninstall"
+      - "pytest *"
+      - "black *"
+      - "ruff *"
+      - "mypy *"
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+      - "git add *"
+      - "git commit *"
+      - "cp"
+      - "mv"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+      - "pip install --force"
+
+  # ─────────────────────────────────────────────────────────────
+  # AGENTES DE TESTING
+  # ─────────────────────────────────────────────────────────────
+  UnitTestEngineer:
+    description: "Ingeniero de tests unitarios"
+    default_action: "allow"
+
+    allowed:
+      - "python *"
+      - "pytest *"
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+      - "coverage *"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+  IntegrationTestEngineer:
+    description: "Ingeniero de tests de integración"
+    default_action: "allow"
+
+    allowed:
+      - "python *"
+      - "pytest *"
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+  BacktestValidator:
+    description: "Validador de backtests"
+    default_action: "allow"
+
+    allowed:
+      - "python *"
+      - "pytest *"
+      - "ls"
+      - "cat"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+  PerformanceTester:
+    description: "Tester de performance"
+    default_action: "allow"
+
+    allowed:
+      - "python *"
+      - "pytest *"
+      - "ls"
+      - "cat"
+      - "curl"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+  # ─────────────────────────────────────────────────────────────
+  # AGENTES DE QUALITY
+  # ─────────────────────────────────────────────────────────────
+  CodeReviewer:
+    description: "Revisor de código"
+    default_action: "allow"
+
+    allowed:
+      - "git diff *"
+      - "git status"
+      - "git log *"
+      - "ls"
+      - "cat"
+      - "python *"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+      - "git push"
+      - "git commit"
+
+  SecurityAuditor:
+    description: "Auditor de seguridad"
+    default_action: "allow"
+
+    allowed:
+      - "ls"
+      - "cat"
+      - "git diff *"
+      - "git status"
+      - "python *"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+  # ─────────────────────────────────────────────────────────────
+  # AGENTES DE DEVOPS
+  # ─────────────────────────────────────────────────────────────
+  ContainerSpecialist:
+    description: "Especialista en contenedores"
+    default_action: "allow"
+
+    allowed:
+      - "podman *"
+      - "docker *"
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+      - "python *"
+
+    denied_always:
+      - "podman system prune"
+      - "docker system prune"
+      - "rm -rf *"
+
+    approval_required:
+      - "podman rm -f *"
+      - "docker rm -f *"
+      - "podman rmi *"
+      - "docker rmi *"
+
+  CIConfigurer:
+    description: "Configurador de CI/CD"
+    default_action: "allow"
+
+    allowed:
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+      - "git add *"
+      - "git commit *"
+      - "python *"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+  DeploymentEngineer:
+    description: "Ingeniero de despliegue"
+    default_action: "ask"
+
+    allowed:
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+      - "python *"
+      - "pip install"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+    approval_required:
+      - "docker *"
+      - "podman *"
+
+  MonitoringSetup:
+    description: "Configuración de monitoreo"
+    default_action: "allow"
+
+    allowed:
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+      - "python *"
+      - "pip install"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+  # ─────────────────────────────────────────────────────────────
+  # SUBAGENTES CORE
+  # ─────────────────────────────────────────────────────────────
+  ContextScout:
+    description: "Descubridor de contexto"
+    default_action: "allow"
+
+    allowed:
+      - "ls"
+      - "cat"
+      - "glob"
+      - "grep"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+      - "git *"
+      - "python *"
+
+  ExternalScout:
+    description: "Buscador de documentación externa"
+    default_action: "allow"
+
+    allowed:
+      - "curl"
+      - "wget"
+      - "ls"
+      - "cat"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+  TaskManager:
+    description: "Gestor de tareas"
+    default_action: "allow"
+
+    allowed:
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+      - "python *"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+  CoderAgent:
+    description: "Agente de código"
+    default_action: "allow"
+
+    allowed:
+      - "python *"
+      - "pip install"
+      - "pytest *"
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+      - "git add *"
+      - "git commit *"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+      - "git push"
+      - "git push --force"
+
+  TestEngineer:
+    description: "Ingeniero de tests"
+    default_action: "allow"
+
+    allowed:
+      - "python *"
+      - "pytest *"
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+  BuildAgent:
+    description: "Agente de build y validación"
+    default_action: "allow"
+
+    allowed:
+      - "python *"
+      - "pip install"
+      - "pytest *"
+      - "mypy *"
+      - "ruff *"
+      - "black *"
+      - "ls"
+      - "cat"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+  DocWriter:
+    description: "Escritor de documentación"
+    default_action: "allow"
+
+    allowed:
+      - "ls"
+      - "cat"
+      - "mkdir"
+      - "touch"
+      - "python *"
+
+    denied_always:
+      - "rm -rf *"
+      - "sudo *"
+
+# ═════════════════════════════════════════════════════════════
+# WORKSPACE (restringir comandos al directorio del proyecto)
+# ═════════════════════════════════════════════════════════════
+workspace:
+  description: "Restricciones de workspace"
+
+  # Directorio raíz del proyecto
+  allowed_root: "."
+  
+  # Si true, solo permite comandos dentro del workspace
+  restrict_to_workspace: false
+
+  # Rutas permitidas (si restrict_to_workspace es true)
+  allowed_paths:
+    - "."
+    - "./src"
+    - "./tests"
+    - "./docs"
+    - "./examples"
+    - "./config"
+    - "./deployment"
+
+# ═════════════════════════════════════════════════════════════
+# CONFIGURACIÓN DE LOGGING
+# ═════════════════════════════════════════════════════════════
+logging:
+  description: "Configuración de logging de seguridad"
+
+  # Nivel de detalle: debug, info, warning, error
+  level: "info"
+
+  # Guardar log de comandos ejecutados
+  log_commands: true
+
+  # Ruta del archivo de log
+  log_file: ".opencode/logs/security.log"
+
+  # Incluir timestamp en logs
+  include_timestamp: true

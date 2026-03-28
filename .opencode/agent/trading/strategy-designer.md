@@ -5,6 +5,7 @@ category: "trading"
 type: "agent"
 tags: ["trading", "strategies", "backtrader", "algorithms"]
 dependencies: ["subagent:PythonDeveloper", "subagent:TestEngineer", "subagent:BacktestValidator"]
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 ---
 
 # StrategyDesigner

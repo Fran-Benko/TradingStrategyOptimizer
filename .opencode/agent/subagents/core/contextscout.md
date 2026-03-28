@@ -2,6 +2,7 @@
 name: ContextScout
 description: Discovers and recommends context files from .opencode/context/ ranked by priority. Suggests ExternalScout when a framework/library is mentioned but not found internally.
 mode: subagent
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 permission:
   read:
     "*": "allow"

@@ -1,3 +1,9 @@
+---
+name: CodeReviewer
+description: "Especialista en revisión de código"
+guardrails_config: ".opencode/config/security-guardrails.yaml"
+---
+
 # CodeReviewer Agent
 
 ## Rol

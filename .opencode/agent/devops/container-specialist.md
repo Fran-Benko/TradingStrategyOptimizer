@@ -1,3 +1,9 @@
+---
+name: ContainerSpecialist
+description: "Especialista en contenedores (Podman/Docker)"
+guardrails_config: ".opencode/config/security-guardrails.yaml"
+---
+
 # ContainerSpecialist Agent
 
 ## Rol

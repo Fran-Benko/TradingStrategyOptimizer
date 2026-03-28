@@ -5,6 +5,7 @@ category: "trading"
 type: "agent"
 tags: ["trading", "metrics", "analytics", "reporting"]
 dependencies: ["subagent:PythonDeveloper", "subagent:DocumentationWriter"]
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 ---
 
 # MetricsAnalyst

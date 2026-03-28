@@ -3,6 +3,7 @@ name: CoderAgent
 description: Executes coding subtasks in sequence, ensuring completion as specified
 mode: subagent
 temperature: 0
+guardrails_config: ".opencode/config/security-guardrails.yaml"
 permission:
   bash:
     "*": "deny"

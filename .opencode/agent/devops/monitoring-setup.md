@@ -1,3 +1,9 @@
+---
+name: MonitoringSetup
+description: "Especialista en observabilidad y monitoring"
+guardrails_config: ".opencode/config/security-guardrails.yaml"
+---
+
 # MonitoringSetup Agent
 
 ## Rol

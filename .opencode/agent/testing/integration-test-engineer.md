@@ -1,3 +1,9 @@
+---
+name: IntegrationTestEngineer
+description: "Especialista en pruebas de integración para el sistema de trading"
+guardrails_config: ".opencode/config/security-guardrails.yaml"
+---
+
 # IntegrationTestEngineer Agent
 
 ## Rol

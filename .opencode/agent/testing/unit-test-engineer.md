@@ -1,3 +1,9 @@
+---
+name: UnitTestEngineer
+description: "Especialista en pruebas unitarias para el sistema de trading"
+guardrails_config: ".opencode/config/security-guardrails.yaml"
+---
+
 # UnitTestEngineer Agent
 
 ## Rol

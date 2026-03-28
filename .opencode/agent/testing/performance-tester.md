@@ -1,3 +1,9 @@
+---
+name: PerformanceTester
+description: "Especialista en pruebas de rendimiento y benchmarks"
+guardrails_config: ".opencode/config/security-guardrails.yaml"
+---
+
 # PerformanceTester Agent
 
 ## Rol
