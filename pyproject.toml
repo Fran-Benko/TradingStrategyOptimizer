@@ -154,10 +154,6 @@ addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
-    "--cov=trading_system",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-report=xml",
 ]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]

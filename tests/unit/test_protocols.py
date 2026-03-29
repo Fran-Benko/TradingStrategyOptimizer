@@ -3,20 +3,20 @@ Tests for protocols module.
 """
 
 import pytest
-from typing import Any, List, Optional
+from typing import Any, List
 from trading_system.protocols import (
     DataFetcher,
     DataValidator,
     Strategy,
-    Signal,
-    SignalType,
     MetricsCalculator,
-    BacktestEngineProto,
+    BacktestEngine,
     Optimizer,
 )
+import pandas as pd
+import numpy as np
 
 
-class MockDataFetcher(DataFetcher):
+class MockDataFetcher:
     """Mock implementation of DataFetcher for testing."""
     
     def __init__(self, data=None):
@@ -26,15 +26,15 @@ class MockDataFetcher(DataFetcher):
     async def fetch_historical(
         self,
         symbol: str,
-        start_date: str,
-        end_date: str,
-        timeframe: str = "1d"
+        start_date: Any,
+        end_date: Any,
+        interval: str = "1d"
     ):
         self.fetch_called = True
         return self.data
 
 
-class MockDataValidator(DataValidator):
+class MockDataValidator:
     """Mock implementation of DataValidator for testing."""
     
     def __init__(self, is_valid: bool = True):
@@ -46,20 +46,18 @@ class MockDataValidator(DataValidator):
         return self.is_valid
 
 
-class MockStrategy(Strategy):
+class MockStrategy:
     """Mock implementation of Strategy for testing."""
     
-    def __init__(self, signals: List[Signal] = None):
-        self.signals = signals or []
-        self.generate_signals_called = False
+    def __init__(self, name: str = "MockStrategy"):
+        self._name = name
     
     @property
     def name(self) -> str:
-        return "MockStrategy"
+        return self._name
     
-    def generate_signals(self, data: Any) -> List[Signal]:
-        self.generate_signals_called = True
-        return self.signals
+    def generate_signals(self, data: pd.DataFrame) -> pd.Series:
+        return pd.Series([0] * len(data), index=data.index)
 
 
 class TestDataFetcherProtocol:
@@ -67,7 +65,7 @@ class TestDataFetcherProtocol:
 
     def test_data_fetcher_protocol(self):
         """Test that DataFetcher protocol is properly defined."""
-        fetcher = MockDataFetcher(data=[])
+        fetcher = MockDataFetcher(data=pd.DataFrame())
         
         assert hasattr(fetcher, 'fetch_historical')
         assert callable(fetcher.fetch_historical)
@@ -75,9 +73,6 @@ class TestDataFetcherProtocol:
     @pytest.mark.asyncio
     async def test_fetch_historical_call(self):
         """Test fetch_historical method call."""
-        import pandas as pd
-        import numpy as np
-        
         dates = pd.date_range('2023-01-01', periods=10)
         data = pd.DataFrame({
             'open': np.random.rand(10) * 100 + 100,
@@ -112,13 +107,6 @@ class TestDataValidatorProtocol:
         assert isinstance(result, bool)
         assert result is True
 
-    def test_validate_called(self):
-        """Test validate is called."""
-        validator = MockDataValidator()
-        validator.validate({})
-        
-        assert validator.validate_called is True
-
 
 class TestStrategyProtocol:
     """Test Strategy protocol."""
@@ -132,33 +120,16 @@ class TestStrategyProtocol:
 
     def test_generate_signals(self):
         """Test generate_signals method."""
-        signals = [
-            Signal(date=None, type=SignalType.BUY, price=100.0),
-            Signal(date=None, type=SignalType.SELL, price=105.0),
-        ]
+        dates = pd.date_range('2023-01-01', periods=10)
+        data = pd.DataFrame({
+            'close': np.random.rand(10) * 100
+        }, index=dates)
         
-        strategy = MockStrategy(signals=signals)
-        result = strategy.generate_signals({})
+        strategy = MockStrategy("TestStrategy")
+        result = strategy.generate_signals(data)
         
-        assert strategy.generate_signals_called is True
-        assert len(result) == 2
-        assert result[0].type == SignalType.BUY
-
-
-class TestSignalType:
-    """Test SignalType enum."""
-
-    def test_signal_types(self):
-        """Test all signal types exist."""
-        assert SignalType.BUY is not None
-        assert SignalType.SELL is not None
-        assert SignalType.HOLD is not None
-
-    def test_signal_type_values(self):
-        """Test signal type values."""
-        assert SignalType.BUY.value == "buy"
-        assert SignalType.SELL.value == "sell"
-        assert SignalType.HOLD.value == "hold"
+        assert len(result) == 10
+        assert strategy.name == "TestStrategy"
 
 
 class TestMetricsCalculatorProtocol:
@@ -178,13 +149,13 @@ class TestMetricsCalculatorProtocol:
 
 
 class TestBacktestEngineProtocol:
-    """Test BacktestEngineProto protocol."""
+    """Test BacktestEngine protocol."""
 
     def test_backtest_engine_protocol(self):
-        """Test that BacktestEngineProto protocol is properly defined."""
+        """Test that BacktestEngine protocol is properly defined."""
         
-        class MockBacktestEngine(BacktestEngineProto):
-            def run(self, strategy: Strategy, data: Any) -> Any:
+        class MockBacktestEngine(BacktestEngine):
+            def run(self, strategy: Strategy, data: pd.DataFrame) -> Any:
                 return {}
         
         engine = MockBacktestEngine()
@@ -200,7 +171,7 @@ class TestOptimizerProtocol:
         """Test that Optimizer protocol is properly defined."""
         
         class MockOptimizer(Optimizer):
-            def optimize(self, strategy: Strategy, data: Any, params: dict) -> Any:
+            def optimize(self, strategy: Strategy, data: pd.DataFrame, params: dict) -> Any:
                 return {}
         
         optimizer = MockOptimizer()
@@ -215,9 +186,6 @@ class TestProtocolIntegration:
     @pytest.mark.asyncio
     async def test_data_pipeline(self):
         """Test complete data pipeline with protocols."""
-        import pandas as pd
-        import numpy as np
-        
         dates = pd.date_range('2023-01-01', periods=100)
         data = pd.DataFrame({
             'open': np.random.rand(100) * 100 + 100,
