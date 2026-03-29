@@ -284,7 +284,8 @@ class TestBacktestEngineRun:
     def test_run_result_attributes(self, sample_ohlcv_data):
         """Test that result contains all expected attributes."""
         engine = BacktestEngine()
-        strategy = AllBuyStrategy()
+        config = StrategyConfig(name="AllBuyStrategy")
+        strategy = AllBuyStrategy(config=config)
         
         result = engine.run(strategy, sample_ohlcv_data, "AAPL")
         
