@@ -50,11 +50,11 @@ class TestDataValidationError:
     def test_data_validation_error(self):
         """Test DataValidationError can be raised."""
         with pytest.raises(DataValidationError):
-            raise DataValidationError("Invalid data format")
+            raise DataValidationError(["error1", "error2"])
 
     def test_data_validation_error_inheritance(self):
         """Test DataValidationError inherits from TradingSystemError."""
-        error = DataValidationError("Test")
+        error = DataValidationError(["test"])
         assert isinstance(error, TradingSystemError)
 
 
@@ -64,12 +64,14 @@ class TestRateLimitError:
     def test_rate_limit_error(self):
         """Test RateLimitError can be raised."""
         with pytest.raises(RateLimitError):
-            raise RateLimitError("Rate limit exceeded")
+            raise RateLimitError("alpaca", 60)
 
     def test_rate_limit_error_inheritance(self):
         """Test RateLimitError inherits from TradingSystemError."""
-        error = RateLimitError("Test")
+        error = RateLimitError("alpaca", 60)
         assert isinstance(error, TradingSystemError)
+        assert error.source == "alpaca"
+        assert error.retry_after == 60
 
 
 class TestStrategyError:
@@ -78,12 +80,14 @@ class TestStrategyError:
     def test_strategy_error(self):
         """Test StrategyError can be raised."""
         with pytest.raises(StrategyError):
-            raise StrategyError("Strategy error")
+            raise StrategyError("RSI", "Invalid parameters")
 
     def test_strategy_error_inheritance(self):
         """Test StrategyError inherits from TradingSystemError."""
-        error = StrategyError("Test")
+        error = StrategyError("RSI", "Invalid parameters")
         assert isinstance(error, TradingSystemError)
+        assert error.strategy_name == "RSI"
+        assert error.reason == "Invalid parameters"
 
 
 class TestBacktestError:
@@ -92,7 +96,7 @@ class TestBacktestError:
     def test_backtest_error(self):
         """Test BacktestError can be raised."""
         with pytest.raises(BacktestError):
-            raise BacktestError("Backtest failed")
+            raise BacktestError("Insufficient data")
 
     def test_backtest_error_inheritance(self):
         """Test BacktestError inherits from TradingSystemError."""
@@ -106,7 +110,7 @@ class TestOptimizationError:
     def test_optimization_error(self):
         """Test OptimizationError can be raised."""
         with pytest.raises(OptimizationError):
-            raise OptimizationError("Optimization failed")
+            raise OptimizationError("No convergence")
 
     def test_optimization_error_inheritance(self):
         """Test OptimizationError inherits from TradingSystemError."""
@@ -120,12 +124,14 @@ class TestConfigurationError:
     def test_configuration_error(self):
         """Test ConfigurationError can be raised."""
         with pytest.raises(ConfigurationError):
-            raise ConfigurationError("Invalid configuration")
+            raise ConfigurationError("api_key", "Missing required field")
 
     def test_configuration_error_inheritance(self):
         """Test ConfigurationError inherits from TradingSystemError."""
-        error = ConfigurationError("Test")
+        error = ConfigurationError("api_key", "Missing")
         assert isinstance(error, TradingSystemError)
+        assert error.parameter == "api_key"
+        assert error.reason == "Missing"
 
 
 class TestInsufficientDataError:
@@ -134,12 +140,14 @@ class TestInsufficientDataError:
     def test_insufficient_data_error(self):
         """Test InsufficientDataError can be raised."""
         with pytest.raises(InsufficientDataError):
-            raise InsufficientDataError("Not enough data")
+            raise InsufficientDataError(100, 50)
 
     def test_insufficient_data_error_inheritance(self):
         """Test InsufficientDataError inherits from TradingSystemError."""
-        error = InsufficientDataError("Test")
+        error = InsufficientDataError(100, 50)
         assert isinstance(error, TradingSystemError)
+        assert error.required == 100
+        assert error.available == 50
 
 
 class TestExceptionHierarchy:
@@ -159,4 +167,4 @@ class TestExceptionHierarchy:
     def test_all_errors_catchable(self):
         """Test that all errors can be caught by base class."""
         with pytest.raises(TradingSystemError):
-            raise InsufficientDataError("Test")
+            raise InsufficientDataError(100, 50)

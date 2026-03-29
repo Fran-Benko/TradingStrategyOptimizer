@@ -45,7 +45,7 @@ class TestGoogleFinanceConfig:
         """Test default Google Finance configuration."""
         config = GoogleFinanceConfig()
         
-        assert config.enabled is True
+        assert config.api_key is None
 
 
 class TestDataConfig:
@@ -55,18 +55,18 @@ class TestDataConfig:
         """Test default data configuration."""
         config = DataConfig()
         
-        assert config.default_source == "yahoo"
         assert config.cache_enabled is True
+        assert config.cache_ttl == 3600
 
     def test_custom_data_config(self):
         """Test custom data configuration."""
         config = DataConfig(
-            default_source="alpaca",
-            cache_enabled=False
+            cache_enabled=False,
+            cache_ttl=7200
         )
         
-        assert config.default_source == "alpaca"
         assert config.cache_enabled is False
+        assert config.cache_ttl == 7200
 
 
 class TestBacktestConfig:
@@ -107,17 +107,20 @@ class TestTradingSystemConfig:
 
     def test_default_system_config(self):
         """Test default system configuration."""
-        config = TradingSystemConfig()
+        config = TradingSystemConfig(
+            alpaca=AlpacaConfig(api_key="test", secret_key="test")
+        )
         
-        assert config.name == "trading-system"
+        assert config.environment == "development"
         assert config.debug is False
 
     def test_custom_system_config(self):
         """Test custom system configuration."""
         config = TradingSystemConfig(
-            name="my-trading-bot",
-            debug=True
+            environment="production",
+            debug=True,
+            alpaca=AlpacaConfig(api_key="test", secret_key="test")
         )
         
-        assert config.name == "my-trading-bot"
+        assert config.environment == "production"
         assert config.debug is True

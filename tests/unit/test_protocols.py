@@ -139,13 +139,20 @@ class TestMetricsCalculatorProtocol:
         """Test that MetricsCalculator protocol is properly defined."""
         
         class MockMetricsCalculator(MetricsCalculator):
-            def calculate(self, data: Any) -> dict:
-                return {}
+            def calculate_returns(self, trades: pd.DataFrame) -> dict:
+                return {"total_return": 0.0}
+            
+            def calculate_risk(self, trades: pd.DataFrame) -> dict:
+                return {"max_drawdown": 0.0}
+            
+            def calculate_ratios(self, trades: pd.DataFrame) -> dict:
+                return {"sharpe": 0.0}
         
         calc = MockMetricsCalculator()
         
-        assert hasattr(calc, 'calculate')
-        assert callable(calc.calculate)
+        assert hasattr(calc, 'calculate_returns')
+        assert hasattr(calc, 'calculate_risk')
+        assert hasattr(calc, 'calculate_ratios')
 
 
 class TestBacktestEngineProtocol:
@@ -155,13 +162,20 @@ class TestBacktestEngineProtocol:
         """Test that BacktestEngine protocol is properly defined."""
         
         class MockBacktestEngine(BacktestEngine):
-            def run(self, strategy: Strategy, data: pd.DataFrame) -> Any:
+            def run(self, strategy: Strategy, data: pd.DataFrame, initial_capital: float = 100000.0) -> dict:
                 return {}
+            
+            def get_trades(self) -> pd.DataFrame:
+                return pd.DataFrame()
+            
+            def get_equity_curve(self) -> pd.DataFrame:
+                return pd.DataFrame()
         
         engine = MockBacktestEngine()
         
         assert hasattr(engine, 'run')
-        assert callable(engine.run)
+        assert hasattr(engine, 'get_trades')
+        assert hasattr(engine, 'get_equity_curve')
 
 
 class TestOptimizerProtocol:
@@ -171,13 +185,16 @@ class TestOptimizerProtocol:
         """Test that Optimizer protocol is properly defined."""
         
         class MockOptimizer(Optimizer):
-            def optimize(self, strategy: Strategy, data: pd.DataFrame, params: dict) -> Any:
+            def optimize(self, strategy_class: type, data: pd.DataFrame, param_grid: dict) -> dict:
+                return {}
+            
+            def get_results(self) -> dict:
                 return {}
         
         optimizer = MockOptimizer()
         
         assert hasattr(optimizer, 'optimize')
-        assert callable(optimizer.optimize)
+        assert hasattr(optimizer, 'get_results')
 
 
 class TestProtocolIntegration:
